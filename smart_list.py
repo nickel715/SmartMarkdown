@@ -9,7 +9,8 @@ import sublime_plugin
 
 ORDER_LIST_PATTERN = re.compile(r"(\s*)(\d+)(\.\s+)\S+")
 UNORDER_LIST_PATTERN = re.compile(r"(\s*[-+\**]+)(\s+)\S+")
-EMPTY_LIST_PATTERN = re.compile(r"(\s*([-+\**]|\d+\.+))\s+$")
+EMPTY_LIST_PATTERN = re.compile(r"(\s*([-+\**]|\d+\.+))\s*(\[[^\]]*\])?\s+$")
+UNORDER_TODO_LIST_PATTERN = re.compile(r"(\s*[-+\**]+)(\s+)\[[^\]]*\](\s+)\S+")
 
 
 class SmartListCommand(sublime_plugin.TextCommand):
@@ -40,6 +41,12 @@ class SmartListCommand(sublime_plugin.TextCommand):
                 insert_text = match.group(1) + \
                               str(int(match.group(2)) + 1) + \
                               match.group(3)
+                self.view.insert(edit, region.a, "\n" + insert_text)
+                break
+
+            match = UNORDER_TODO_LIST_PATTERN.match(before_point_content)
+            if match:
+                insert_text = match.group(1) + match.group(2) + "[ ]" + match.group(3)
                 self.view.insert(edit, region.a, "\n" + insert_text)
                 break
 
